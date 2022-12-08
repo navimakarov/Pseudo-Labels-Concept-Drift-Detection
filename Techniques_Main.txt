@@ -1,0 +1,9 @@
+1. Self-training: This is the simplest form of pseudo labeling, where the model is trained on the labeled data, and then used to predict labels for the unlabeled data. These predicted labels are then used as pseudo-labels to train the model again. This process is repeated until the model reaches convergence.
+
+2. Co-training: This is a variant of self-training where two or more models are trained on different views of the data. The models are then used to predict labels for the unlabeled data, and these predictions are combined to generate the final pseudo-labels.
+
+3. Tri-training: This is another variant of self-training, where three models are trained on different views of the data. The predictions of the three models are then combined using majority voting to generate the pseudo-labels.
+
+4. Multi-view training: This is a more general version of co-training and tri-training, where multiple models are trained on different views of the data, and their predictions are combined to generate the pseudo-labels.
+
+5. Noise-aware training: This is a variant of pseudo labeling that takes into account the uncertainty of the model's predictions. The idea is to weight the pseudo-labels based on the confidence of the model's predictions, so that the model is only trained on the most confident pseudo-labels. This can help the model avoid overfitting to noisy or incorrect pseudo-labels.
