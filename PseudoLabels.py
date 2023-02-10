@@ -62,7 +62,7 @@ class PseudoLabels:
             score = model.score(X_val, y_val)
             scores.append(score)
         
-        models_statistics.append([model_name, np.mean(scores)])
+        models_statistics.append([model_name, model, np.mean(scores)])
         
         pseudo_labels = model.predict(self.X_unlabeled)
             
@@ -81,7 +81,7 @@ class PseudoLabels:
             score = model.score(X_val, y_val)
             scores.append(score)
         
-        models_statistics.append([model_name + "(with pseudo-labels)", np.mean(scores)])
+        models_statistics.append([model_name + "(with pseudo-labels)", model, np.mean(scores)])
         
         return models_statistics
       
