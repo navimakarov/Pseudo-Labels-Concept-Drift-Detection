@@ -13,24 +13,24 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.semi_supervised import LabelPropagation
 from sklearn.semi_supervised import LabelSpreading
 
-from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 
 
-models = {"KNN": KNeighborsClassifier(), "MLP": MLPClassifier(), "SVC": SVC(), 
+models = {"KNN": KNeighborsClassifier(), "MLP": MLPClassifier(), "SVC": SVC(probability=True), 
                "Desicion Tree":  DecisionTreeClassifier(), "Random Forest Classifier": RandomForestClassifier(),
                "Gaussian":  GaussianNB(), "QDA": QuadraticDiscriminantAnalysis(), 
                "Logistic Regression": LogisticRegression(), "Label Propagation": LabelPropagation(kernel='knn'),
                "Label Spreading": LabelSpreading(kernel='knn')}
 
 class PseudoLabels:
-    def __init__(self, X, y, num_labeled):
+    def __init__(self, X, y, num_labeled, threshold=0.0):
         self.X_labeled = X[:num_labeled]
         self.y_labeled = y[:num_labeled]
 
         self.X_unlabeled = X[num_labeled:]  
         
         self.k_fold = KFold(n_splits=10)
+        self.threshold = threshold
         
     
     def k_fold_cross_validation(self, model, X, Y):
@@ -59,15 +59,19 @@ class PseudoLabels:
     def train_semi_supervised_model(self, model_name, supervised_model):
         model = models[model_name]
         
-        pseudo_labels = supervised_model.predict(self.X_unlabeled)
-            
+        probabilities = supervised_model.predict_proba(self.X_unlabeled)
+        pseudo_labels = np.argmax(probabilities, axis=1)
+    
+        high_probability_indices = np.where(np.max(probabilities, axis=1) >= self.threshold)[0]
+        pseudo_labels = pseudo_labels[high_probability_indices]
+        X_unlabeled = self.X_unlabeled[high_probability_indices]
+    
         # Combine the labeled and pseudo labeled data
-        X_combined = np.concatenate((self.X_labeled, self.X_unlabeled))
+        X_combined = np.concatenate((self.X_labeled, X_unlabeled))
         y_combined = np.concatenate((self.y_labeled, pseudo_labels))
-        
+    
         accuracy = self.k_fold_cross_validation(model, X_combined, y_combined)
-        
-        
+    
         return {"model_name": model_name, "model": model, 
                 "accuracy": accuracy, "pseudo_labels": True}
       
@@ -80,7 +84,7 @@ y = data.iloc[:, -1].values
 X = np.array(X)
 y = np.array(y)
 
-pseudo_labels = PseudoLabels(X, y, 300)
+pseudo_labels = PseudoLabels(X, y, 10, 0.5)
 
 models_statistics = []
 
